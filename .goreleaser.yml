@@ -1,0 +1,30 @@
+version: 2
+
+builds:
+  - main: ./cmd/zh-finder/
+    binary: zh-finder
+    ldflags:
+      - -X github.com/cluion/zh-finder/internal/cli.version={{.Version}}
+      - -X github.com/cluion/zh-finder/internal/cli.commit={{.ShortCommit}}
+      - -X github.com/cluion/zh-finder/internal/cli.date={{.Date}}
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+
+brews:
+  - repository:
+      owner: cluion
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    homepage: https://github.com/cluion/zh-finder
+    description: CLI tool to find Chinese characters (Traditional/Simplified) in files
