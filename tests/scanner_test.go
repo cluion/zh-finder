@@ -13,7 +13,7 @@ func TestScanReturnsFiles(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(tempDir)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	testFile := filepath.Join(tempDir, "test.txt")
 	if err := os.WriteFile(testFile, []byte("test content"), 0644); err != nil {
@@ -36,7 +36,7 @@ func TestScanWithExtensionFilter(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.RemoveAll(tempDir)
+	defer func() { _ = os.RemoveAll(tempDir) }()
 
 	if err := os.WriteFile(filepath.Join(tempDir, "test.txt"), []byte("test"), 0644); err != nil {
 		t.Fatal(err)
@@ -65,7 +65,7 @@ func TestIsBinaryDetectsBinary(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.Remove(tempFile.Name())
+	defer func() { _ = os.Remove(tempFile.Name()) }()
 
 	if _, err := tempFile.Write([]byte("text\x00binary")); err != nil {
 		t.Fatal(err)
@@ -85,7 +85,7 @@ func TestIsBinaryDetectsText(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.Remove(tempFile.Name())
+	defer func() { _ = os.Remove(tempFile.Name()) }()
 
 	if _, err := tempFile.Write([]byte("plain text")); err != nil {
 		t.Fatal(err)

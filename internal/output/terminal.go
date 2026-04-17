@@ -47,7 +47,7 @@ type TerminalFormatter struct {
 func (t *TerminalFormatter) Format(w io.Writer, results map[string][]LineMatch, stats *Stats) error {
 	useStyle := t.colorEnabled
 
-	for file, lines := range linesSorted(results) {
+	for file, lines := range results {
 		fileMatchCount := 0
 		tradCount := 0
 		simpCount := 0
@@ -59,17 +59,22 @@ func (t *TerminalFormatter) Format(w io.Writer, results map[string][]LineMatch, 
 			fileMatchCount += len(lm.Matches)
 
 			if useStyle {
-				fmt.Fprintf(w, "%s%s%s\n",
+				if _, err := fmt.Fprintf(w, "%s%s%s\n",
 					fileStyle.Render(file),
 					lineStyle.Render(":"),
 					lineStyle.Render(fmt.Sprintf("%d", lm.Line)),
-				)
+				); err != nil {
+					return err
+				}
 			} else {
-				fmt.Fprintf(w, "%s:%d\n", file, lm.Line)
+				if _, err := fmt.Fprintf(w, "%s:%d\n", file, lm.Line); err != nil {
+					return err
+				}
 			}
 
-			// Render content with styled matches
-			renderLine(w, lm.Content, lm.Matches, useStyle)
+			if err := renderLine(w, lm.Content, lm.Matches, useStyle); err != nil {
+				return err
+			}
 
 			var typeLabels []string
 			for _, m := range lm.Matches {
@@ -82,37 +87,71 @@ func (t *TerminalFormatter) Format(w io.Writer, results map[string][]LineMatch, 
 					simpCount++
 				}
 			}
-			fmt.Fprintf(w, "        %s\n", strings.Join(typeLabels, " "))
+			if _, err := fmt.Fprintf(w, "        %s\n", strings.Join(typeLabels, " ")); err != nil {
+				return err
+			}
 		}
 
 		if fileMatchCount > 0 {
 			if useStyle {
-				fmt.Fprintf(w, "%s\n", fileStyle.Render("./"+file))
-				fmt.Fprintf(w, "  Matches: %d, Traditional: %d, Simplified: %d\n\n",
-					fileMatchCount, tradCount, simpCount)
+				if _, err := fmt.Fprintf(w, "%s\n", fileStyle.Render("./"+file)); err != nil {
+					return err
+				}
+				if _, err := fmt.Fprintf(w, "  Matches: %d, Traditional: %d, Simplified: %d\n\n",
+					fileMatchCount, tradCount, simpCount); err != nil {
+					return err
+				}
 			} else {
-				fmt.Fprintf(w, "./%s\n", file)
-				fmt.Fprintf(w, "  Matches: %d, Traditional: %d, Simplified: %d\n\n",
-					fileMatchCount, tradCount, simpCount)
+				if _, err := fmt.Fprintf(w, "./%s\n", file); err != nil {
+					return err
+				}
+				if _, err := fmt.Fprintf(w, "  Matches: %d, Traditional: %d, Simplified: %d\n\n",
+					fileMatchCount, tradCount, simpCount); err != nil {
+					return err
+				}
 			}
 		}
 	}
 
 	if stats != nil {
 		if useStyle {
-			fmt.Fprintln(w, statsHeaderStyle.Render("=== Statistics ==="))
-			fmt.Fprintf(w, "%s %s\n", statsKeyStyle.Render("Scanned files:"), statsValueStyle.Render(fmt.Sprintf("%d", stats.ScannedFiles)))
-			fmt.Fprintf(w, "%s %s\n", statsKeyStyle.Render("Matched files:"), statsValueStyle.Render(fmt.Sprintf("%d", stats.MatchedFiles)))
-			fmt.Fprintf(w, "%s %s\n", statsKeyStyle.Render("Traditional chars:"), statsValueStyle.Render(fmt.Sprintf("%d", stats.TraditionalCount)))
-			fmt.Fprintf(w, "%s %s\n", statsKeyStyle.Render("Simplified chars:"), statsValueStyle.Render(fmt.Sprintf("%d", stats.SimplifiedCount)))
-			fmt.Fprintf(w, "%s %s\n", statsKeyStyle.Render("Duration:"), statsValueStyle.Render(stats.Duration))
+			if _, err := fmt.Fprintln(w, statsHeaderStyle.Render("=== Statistics ===")); err != nil {
+				return err
+			}
+			if _, err := fmt.Fprintf(w, "%s %s\n", statsKeyStyle.Render("Scanned files:"), statsValueStyle.Render(fmt.Sprintf("%d", stats.ScannedFiles))); err != nil {
+				return err
+			}
+			if _, err := fmt.Fprintf(w, "%s %s\n", statsKeyStyle.Render("Matched files:"), statsValueStyle.Render(fmt.Sprintf("%d", stats.MatchedFiles))); err != nil {
+				return err
+			}
+			if _, err := fmt.Fprintf(w, "%s %s\n", statsKeyStyle.Render("Traditional chars:"), statsValueStyle.Render(fmt.Sprintf("%d", stats.TraditionalCount))); err != nil {
+				return err
+			}
+			if _, err := fmt.Fprintf(w, "%s %s\n", statsKeyStyle.Render("Simplified chars:"), statsValueStyle.Render(fmt.Sprintf("%d", stats.SimplifiedCount))); err != nil {
+				return err
+			}
+			if _, err := fmt.Fprintf(w, "%s %s\n", statsKeyStyle.Render("Duration:"), statsValueStyle.Render(stats.Duration)); err != nil {
+				return err
+			}
 		} else {
-			fmt.Fprintln(w, "=== Statistics ===")
-			fmt.Fprintf(w, "Scanned files: %d\n", stats.ScannedFiles)
-			fmt.Fprintf(w, "Matched files: %d\n", stats.MatchedFiles)
-			fmt.Fprintf(w, "Traditional chars: %d\n", stats.TraditionalCount)
-			fmt.Fprintf(w, "Simplified chars: %d\n", stats.SimplifiedCount)
-			fmt.Fprintf(w, "Duration: %s\n", stats.Duration)
+			if _, err := fmt.Fprintln(w, "=== Statistics ==="); err != nil {
+				return err
+			}
+			if _, err := fmt.Fprintf(w, "Scanned files: %d\n", stats.ScannedFiles); err != nil {
+				return err
+			}
+			if _, err := fmt.Fprintf(w, "Matched files: %d\n", stats.MatchedFiles); err != nil {
+				return err
+			}
+			if _, err := fmt.Fprintf(w, "Traditional chars: %d\n", stats.TraditionalCount); err != nil {
+				return err
+			}
+			if _, err := fmt.Fprintf(w, "Simplified chars: %d\n", stats.SimplifiedCount); err != nil {
+				return err
+			}
+			if _, err := fmt.Fprintf(w, "Duration: %s\n", stats.Duration); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -120,10 +159,10 @@ func (t *TerminalFormatter) Format(w io.Writer, results map[string][]LineMatch, 
 }
 
 // renderLine outputs the line content with styled Chinese characters.
-func renderLine(w io.Writer, content string, matches []matcher.Match, useStyle bool) {
+func renderLine(w io.Writer, content string, matches []matcher.Match, useStyle bool) error {
 	if !useStyle || len(matches) == 0 {
-		fmt.Fprintf(w, "  %s\n", content)
-		return
+		_, err := fmt.Fprintf(w, "  %s\n", content)
+		return err
 	}
 
 	runes := []rune(content)
@@ -142,7 +181,8 @@ func renderLine(w io.Writer, content string, matches []matcher.Match, useStyle b
 		}
 	}
 
-	fmt.Fprintf(w, "  %s\n", sb.String())
+	_, err := fmt.Fprintf(w, "  %s\n", sb.String())
+	return err
 }
 
 func styleForType(t classifier.HanType) lipgloss.Style {
@@ -154,9 +194,4 @@ func styleForType(t classifier.HanType) lipgloss.Style {
 	default:
 		return commonStyle
 	}
-}
-
-// linesSorted returns results in a deterministic order.
-func linesSorted(results map[string][]LineMatch) map[string][]LineMatch {
-	return results
 }
