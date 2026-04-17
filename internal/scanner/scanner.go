@@ -136,3 +136,15 @@ func (s *Scanner) SetMaxDepth(depth int) {
 func (s *Scanner) SetScanBinary(scan bool) {
 	s.scanBinary = scan
 }
+
+func (s *Scanner) ExcludeDirs() []string {
+	return s.excludeDirs
+}
+
+func (s *Scanner) MaxDepth() int {
+	return s.maxDepth
+}
+
+func (s *Scanner) ScanBinary() bool {
+	return s.scanBinary
+}
