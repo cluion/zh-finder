@@ -41,7 +41,7 @@ func (s *Scanner) Scan(root string) <-chan FileInfo {
 	go func() {
 		defer close(out)
 
-		filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		_ = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return nil
 			}
@@ -96,7 +96,7 @@ func (s *Scanner) IsBinary(path string) bool {
 	if err != nil {
 		return true
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	buf := make([]byte, 8000)
 	n, _ := f.Read(buf)

@@ -29,9 +29,9 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "zh-finder",
-	Short: "Find Chinese characters (Traditional/Simplified) in files",
-	Long:  "A CLI tool to scan files for Chinese characters, distinguishing between Traditional and Simplified Chinese.",
+	Use:           "zh-finder",
+	Short:         "Find Chinese characters (Traditional/Simplified) in files",
+	Long:          "A CLI tool to scan files for Chinese characters, distinguishing between Traditional and Simplified Chinese.",
 	SilenceUsage:  true,
 	SilenceErrors: true,
 }
@@ -168,9 +168,10 @@ func runScan(cmd *cobra.Command, args []string) error {
 		for _, lines := range results {
 			for _, lm := range lines {
 				for _, m := range lm.Matches {
-					if m.Type == classifier.Traditional {
+					switch m.Type {
+					case classifier.Traditional:
 						tradCount++
-					} else if m.Type == classifier.Simplified {
+					case classifier.Simplified:
 						simpCount++
 					}
 				}
@@ -186,6 +187,6 @@ func runScan(cmd *cobra.Command, args []string) error {
 	}
 
 	// Format output
-	fmt := output.New(!noColor, format)
-	return fmt.Format(cmd.OutOrStdout(), results, statsData)
+	formatter := output.New(!noColor, format)
+	return formatter.Format(cmd.OutOrStdout(), results, statsData)
 }

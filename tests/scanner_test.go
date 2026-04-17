@@ -9,11 +9,16 @@ import (
 )
 
 func TestScanReturnsFiles(t *testing.T) {
-	tempDir, _ := os.MkdirTemp("", "zh-finder-test")
+	tempDir, err := os.MkdirTemp("", "zh-finder-test")
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer os.RemoveAll(tempDir)
 
 	testFile := filepath.Join(tempDir, "test.txt")
-	os.WriteFile(testFile, []byte("test content"), 0644)
+	if err := os.WriteFile(testFile, []byte("test content"), 0644); err != nil {
+		t.Fatal(err)
+	}
 
 	s := scanner.New()
 	var files []scanner.FileInfo
@@ -27,11 +32,18 @@ func TestScanReturnsFiles(t *testing.T) {
 }
 
 func TestScanWithExtensionFilter(t *testing.T) {
-	tempDir, _ := os.MkdirTemp("", "zh-finder-test")
+	tempDir, err := os.MkdirTemp("", "zh-finder-test")
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer os.RemoveAll(tempDir)
 
-	os.WriteFile(filepath.Join(tempDir, "test.txt"), []byte("test"), 0644)
-	os.WriteFile(filepath.Join(tempDir, "test.go"), []byte("package main"), 0644)
+	if err := os.WriteFile(filepath.Join(tempDir, "test.txt"), []byte("test"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(tempDir, "test.go"), []byte("package main"), 0644); err != nil {
+		t.Fatal(err)
+	}
 
 	s := scanner.New()
 	s.SetExtensions([]string{"go"})
@@ -49,11 +61,18 @@ func TestScanWithExtensionFilter(t *testing.T) {
 }
 
 func TestIsBinaryDetectsBinary(t *testing.T) {
-	tempFile, _ := os.CreateTemp("", "test")
+	tempFile, err := os.CreateTemp("", "test")
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer os.Remove(tempFile.Name())
 
-	tempFile.Write([]byte("text\x00binary"))
-	tempFile.Close()
+	if _, err := tempFile.Write([]byte("text\x00binary")); err != nil {
+		t.Fatal(err)
+	}
+	if err := tempFile.Close(); err != nil {
+		t.Fatal(err)
+	}
 
 	s := scanner.New()
 	if !s.IsBinary(tempFile.Name()) {
@@ -62,11 +81,18 @@ func TestIsBinaryDetectsBinary(t *testing.T) {
 }
 
 func TestIsBinaryDetectsText(t *testing.T) {
-	tempFile, _ := os.CreateTemp("", "test")
+	tempFile, err := os.CreateTemp("", "test")
+	if err != nil {
+		t.Fatal(err)
+	}
 	defer os.Remove(tempFile.Name())
 
-	tempFile.Write([]byte("plain text"))
-	tempFile.Close()
+	if _, err := tempFile.Write([]byte("plain text")); err != nil {
+		t.Fatal(err)
+	}
+	if err := tempFile.Close(); err != nil {
+		t.Fatal(err)
+	}
 
 	s := scanner.New()
 	if s.IsBinary(tempFile.Name()) {
